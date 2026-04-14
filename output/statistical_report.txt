@@ -1,0 +1,188 @@
+
+======================================================================
+  1. DATA LOADING & OVERVIEW
+======================================================================
+Shape        : (3000, 8)
+Columns      : ['constellation', 'environment', 'elevation_deg', 'cn0_dbhz', 'num_satellites', 'pdop', 'position_error_m', 'multipath_index']
+
+Dtypes:
+constellation           str
+environment             str
+elevation_deg       float64
+cn0_dbhz            float64
+num_satellites        int64
+pdop                float64
+position_error_m    float64
+multipath_index     float64
+
+Missing values:
+constellation       0
+environment         0
+elevation_deg       0
+cn0_dbhz            0
+num_satellites      0
+pdop                0
+position_error_m    0
+multipath_index     0
+
+First 5 rows:
+  constellation   environment  elevation_deg  cn0_dbhz  num_satellites   pdop  position_error_m  multipath_index
+0       GLONASS  Urban Canyon           8.21     37.41               6  2.428            4.9800           0.5384
+1       Galileo  Urban Canyon          12.65     35.89               7  8.000            7.1481           0.8114
+2        BeiDou      Open Sky          44.10     40.55              11  2.508            2.6609           0.2036
+3       GLONASS  Urban Canyon          51.98     39.14              10  3.215            6.4161           0.7685
+4           GPS      Open Sky          40.08     43.82              11  2.034            1.4359           0.0691
+
+======================================================================
+  2. DESCRIPTIVE STATISTICS
+======================================================================
+
+position_error_m — summary:
+count    3000.000000
+mean        2.960884
+std         1.918596
+min         0.100000
+25%         1.333150
+50%         2.672800
+75%         4.619250
+max         8.366000
+
+Skewness  : 0.3040
+Kurtosis  : -1.0034
+CV (%)    : 64.80
+
+--- By Environment ---
+               count      mean       std     min      25%     50%      75%     max
+environment                                                                       
+Open Sky      1685.0  1.524213  0.934115  0.1000  0.82240  1.4831  2.20270  4.5123
+Urban Canyon  1315.0  4.801789  1.115687  1.4393  4.03545  4.8052  5.53695  8.3660
+
+--- By Constellation ---
+                count      mean       std  min     25%     50%      75%     max
+constellation                                                                  
+BeiDou          609.0  3.002317  1.887442  0.1  1.3909  2.5822  4.63820  8.0856
+GLONASS         575.0  3.619322  1.885075  0.1  1.9768  3.3707  5.30335  8.3660
+GPS            1057.0  2.814588  1.896385  0.1  1.2221  2.4548  4.44590  7.6835
+Galileo         759.0  2.632558  1.880756  0.1  0.9999  2.3067  4.20180  7.6980
+
+======================================================================
+  3. NORMALITY TESTS
+======================================================================
+Shapiro-Wilk   : W = 0.9552,  p = 1.995e-29
+  → NOT normal
+
+D'Agostino K²  : stat = 730.33,  p = 2.581e-159
+  → NOT normal
+
+Interpretation: Distribution is right-skewed (non-normal). Parametric tests remain valid under CLT for N=3000.
+
+======================================================================
+  4. HYPOTHESIS TEST — ENVIRONMENT EFFECT
+======================================================================
+Open Sky    : n=1685,  mean=1.524 m,  std=0.934 m
+Urban Canyon: n=1315,  mean=4.802 m,  std=1.116 m
+Difference  : 3.278 m
+
+Levene test  : stat = 31.314,  p = 2.393e-08
+  → Variances NOT equal
+
+Welch t-test : t = -85.648,  p = 0.000e+00
+  → H₀ REJECTED  (α = 0.05)
+
+Cohen's d    : 3.185  (effect size: very large)
+
+======================================================================
+  5. ONE-WAY ANOVA — CONSTELLATION EFFECT
+======================================================================
+ANOVA F = 33.160,  p = 4.439e-21
+  → H₀ REJECTED  (α = 0.05)
+
+Tukey HSD post-hoc:
+ Multiple Comparison of Means - Tukey HSD, FWER=0.05  
+======================================================
+ group1  group2 meandiff p-adj   lower   upper  reject
+------------------------------------------------------
+ BeiDou GLONASS    0.617    0.0  0.3347  0.8993   True
+ BeiDou     GPS  -0.1877 0.2059 -0.4347  0.0592  False
+ BeiDou Galileo  -0.3698 0.0018 -0.6338 -0.1057   True
+GLONASS     GPS  -0.8047    0.0 -1.0563 -0.5532   True
+GLONASS Galileo  -0.9868    0.0 -1.2551 -0.7184   True
+    GPS Galileo   -0.182 0.1786  -0.413  0.0489  False
+------------------------------------------------------
+
+======================================================================
+  6. PEARSON CORRELATION ANALYSIS
+======================================================================
+
+Correlation matrix:
+                  position_error_m      pdop  num_satellites  cn0_dbhz  multipath_index  elevation_deg
+position_error_m          1.000000  0.728543       -0.635608 -0.578673         0.738164      -0.475287
+pdop                      0.728543  1.000000       -0.479889 -0.438345         0.595764      -0.374541
+num_satellites           -0.635608 -0.479889        1.000000  0.438413        -0.597064       0.390424
+cn0_dbhz                 -0.578673 -0.438345        0.438413  1.000000        -0.534534       0.329752
+multipath_index           0.738164  0.595764       -0.597064 -0.534534         1.000000      -0.443938
+elevation_deg            -0.475287 -0.374541        0.390424  0.329752        -0.443938       1.000000
+
+Correlations with position_error_m:
+  pdop                   r = +0.729   p = 0.000e+00   ***
+  num_satellites         r = -0.636   p = 0.000e+00   ***
+  cn0_dbhz               r = -0.579   p = 8.811e-268   ***
+  multipath_index        r = +0.738   p = 0.000e+00   ***
+  elevation_deg          r = -0.475   p = 6.232e-169   ***
+
+======================================================================
+  7. MULTIPLE LINEAR REGRESSION (OLS)
+======================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:       position_error_m   R-squared:                       0.794
+Model:                            OLS   Adj. R-squared:                  0.794
+Method:                 Least Squares   F-statistic:                     1284.
+Date:                Tue, 14 Apr 2026   Prob (F-statistic):               0.00
+Time:                        17:27:56   Log-Likelihood:                -3837.7
+No. Observations:                3000   AIC:                             7695.
+Df Residuals:                    2990   BIC:                             7756.
+Df Model:                           9                                         
+Covariance Type:            nonrobust                                         
+==================================================================================================
+                                     coef    std err          t      P>|t|      [0.025      0.975]
+--------------------------------------------------------------------------------------------------
+Intercept                          2.7342      0.187     14.652      0.000       2.368       3.100
+C(constellation)[T.GLONASS]        0.4833      0.051      9.534      0.000       0.384       0.583
+C(constellation)[T.GPS]           -0.1325      0.044     -2.988      0.003      -0.219      -0.046
+C(constellation)[T.Galileo]       -0.4479      0.047     -9.444      0.000      -0.541      -0.355
+C(environment)[T.Urban Canyon]     1.9394      0.082     23.689      0.000       1.779       2.100
+pdop                               0.3959      0.016     24.225      0.000       0.364       0.428
+cn0_dbhz                          -0.0288      0.004     -8.131      0.000      -0.036      -0.022
+elevation_deg                     -0.0032      0.001     -2.789      0.005      -0.005      -0.001
+num_satellites                    -0.0523      0.008     -6.449      0.000      -0.068      -0.036
+multipath_index                    0.2812      0.116      2.427      0.015       0.054       0.508
+==============================================================================
+Omnibus:                       16.827   Durbin-Watson:                   2.025
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               14.944
+Skew:                           0.123   Prob(JB):                     0.000569
+Kurtosis:                       2.756   Cond. No.                         678.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+Key metrics:
+  R²         : 0.7945
+  Adj. R²    : 0.7939
+  F-statistic: 1284.32  (p = 0.000e+00)
+  AIC        : 7695.47
+  BIC        : 7755.53
+
+Top coefficients by |t-value|:
+                                    coef          t              p
+pdop                            0.395929  24.225045  1.585419e-118
+C(environment)[T.Urban Canyon]  1.939438  23.689159  7.689156e-114
+Intercept                       2.734250  14.651673   5.384419e-47
+C(constellation)[T.GLONASS]     0.483276   9.534454   3.010562e-21
+C(constellation)[T.Galileo]    -0.447870  -9.443569   7.017600e-21
+cn0_dbhz                       -0.028833  -8.130898   6.175319e-16
+num_satellites                 -0.052340  -6.448967   1.308566e-10
+C(constellation)[T.GPS]        -0.132455  -2.987735   2.833386e-03
+elevation_deg                  -0.003216  -2.788794   5.323950e-03
+multipath_index                 0.281206   2.426979   1.528383e-02
